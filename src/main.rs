@@ -26,6 +26,8 @@ const CELL_SIZE: f32 = 1.;
 struct GameRule {
     neighbors_to_surive: [bool; 27],
     neighbors_to_spawn: [bool; 27],
+    spawn_noise_count: i32,
+    spawn_noise_radius: i32,
     color_from: Color,
     color_to: Color,
 }
@@ -37,6 +39,8 @@ impl GameRule {
         GameRule {
             neighbors_to_surive,
             neighbors_to_spawn,
+            spawn_noise_count: 50000,
+            spawn_noise_radius: 75,
             color_from: Color::YELLOW,
             color_to: Color::BLUE,
         }
@@ -184,7 +188,8 @@ fn feed_cells(
             false => None,
             true => {
                 let loc = translate_index_to_location(index);
-                let distance = (loc.0.abs() + loc.1.abs() + loc.2.abs()) / (GAME_SIZE * 1.5);
+                // let distance = (loc.0.abs() + loc.1.abs() + loc.2.abs()) / (GAME_SIZE * 1.5);
+                let distance = loc.0.abs().max(loc.1.abs()).max(loc.2.abs()) / (GAME_SIZE / 2.);
                 let r =
                     (1. - distance) * game_rule.color_from.r() + distance * game_rule.color_to.r();
                 let g =
@@ -271,11 +276,26 @@ fn ui(
             }
 
             if ui.button("spawn noise").clicked() {
-                for t in create_random_spawn_points(1000, (0, 0, 0), 50) {
+                for t in create_random_spawn_points(
+                    game_rule.spawn_noise_count,
+                    (0, 0, 0),
+                    game_rule.spawn_noise_radius,
+                ) {
                     let index = translate_location_to_index(t.0, t.1, t.2);
                     cell_locations[index] = true;
                 }
             }
+            let mut spawn_noise_count = game_rule.spawn_noise_count as f32;
+            ui.add(
+                egui::Slider::new(&mut spawn_noise_count, 1.0..=1000000.0).text("cells to spawn"),
+            );
+            game_rule.spawn_noise_count = spawn_noise_count as i32;
+
+            let mut spawn_noise_radius = game_rule.spawn_noise_radius as f32;
+            ui.add(
+                egui::Slider::new(&mut spawn_noise_radius, 1.0..=100.0).text("raduis to spawn in"),
+            );
+            game_rule.spawn_noise_radius = spawn_noise_radius as i32;
         }
 
         ui.add_space(24.0);
@@ -298,15 +318,6 @@ fn ui(
                 }
             });
         }
-
-        // ui.add_space(24.0);
-        // ui.label("Examples:");
-        // for i in 0..this.examples.len() {
-        //     let example = &this.examples[i];
-        //     if ui.button(&example.name).clicked() {
-        //         this.set_example(i);
-        //     }
-        // }
     });
 }
 
@@ -327,7 +338,7 @@ fn setup(
 
     commands
         .spawn_bundle(Camera3dBundle {
-            transform: Transform::from_xyz(-50., 0., 125.).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(-70., 0., 195.).looking_at(Vec3::ZERO, Vec3::Y),
             camera_3d: Camera3d {
                 clear_color: ClearColorConfig::Custom(Color::rgb(0., 0., 0.)),
                 ..default()
