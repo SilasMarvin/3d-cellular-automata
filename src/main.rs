@@ -295,15 +295,15 @@ fn ui(
 
             ui.label("Survival Rule: ");
             ui.horizontal_wrapped(|ui| {
-                for (index, mut i) in game_rule.neighbors_to_surive.iter_mut().enumerate() {
-                    ui.checkbox(&mut i, format!("{}", index));
+                for (index, i) in game_rule.neighbors_to_surive.iter_mut().enumerate() {
+                    ui.checkbox(i, format!("{}", index));
                 }
             });
 
             ui.label("Spawn Rule: ");
             ui.horizontal_wrapped(|ui| {
-                for (index, mut i) in game_rule.neighbors_to_spawn.iter_mut().enumerate() {
-                    ui.checkbox(&mut i, format!("{}", index));
+                for (index, i) in game_rule.neighbors_to_spawn.iter_mut().enumerate() {
+                    ui.checkbox(i, format!("{}", index));
                 }
             });
         }
