@@ -1,8 +1,6 @@
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    input::keyboard::KeyboardInput,
-    input::ButtonState,
     prelude::*,
     render::view::NoFrustumCulling,
     tasks::{ParallelSlice, TaskPool},
@@ -68,7 +66,6 @@ fn main() {
         .add_system(cell_location_updater.with_run_criteria(FixedTimestep::step(0.125)))
         .add_system(ui.after(cell_location_updater))
         .add_system(feed_cells)
-        .add_system(pause)
         .insert_resource(cell_locations)
         .insert_resource(game_rule)
         .insert_resource(paused)
@@ -205,14 +202,6 @@ fn feed_cells(
         })
         .collect();
     *instances = InstanceMaterialData(x);
-}
-
-fn pause(mut key_evr: EventReader<KeyboardInput>, mut paused: ResMut<bool>) {
-    for ev in key_evr.iter() {
-        if ButtonState::Pressed == ev.state && ev.scan_code == 28 {
-            *paused = !(*paused);
-        }
-    }
 }
 
 // Literally tantan's color picker code
